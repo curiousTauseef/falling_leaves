@@ -1,6 +1,6 @@
-var cube, scene, camera, renderer;
+var cube, scene, camera, renderer, animationFrameId;
 
-var skeletonPoints = 
+var skeletonPoints =
 {Invalid:0,
  Head:1,
  Neck:2,
@@ -49,16 +49,16 @@ function loaded() {
                  var pos = user.position;
                  var zrange = 4000;
                  var xrange = 4000;
-                 // cube.position = new THREE.Vector3(pos[0]/xrange * 10, pos[1]/xrange * 2, - (pos[2]/xrange * 10));                 
+                 // cube.position = new THREE.Vector3(pos[0]/xrange * 10, pos[1]/xrange * 2, - (pos[2]/xrange * 10));
                  renderer.render (scene, camera);
              }
           }
     };
-    // Add the radar object as a listener to the zig object, so that 
+    // Add the radar object as a listener to the zig object, so that
     // the zig object will call the radar object's callback functions.
     zig.addListener(radar);
 
-    
+
     var frame = 0;
     var engager = zig.EngageUsersWithSkeleton(1);
     engager.addEventListener('userengaged', function(user) {
@@ -92,9 +92,6 @@ function loaded() {
                             }
                         }
                     }
-                    Leaf.tick();
-                    renderer.render(scene, camera);
-                    
                 });
         });
     engager.addEventListener('userdisengaged', function(user) {
@@ -161,7 +158,7 @@ window.onload = function() {
 
     for (var k in skeletonPoints) {
         if (skeletonPoints.hasOwnProperty(k) && k != "Invalid" && k != "Waist") {
-            var ball = 
+            var ball =
                 new THREE.Mesh(
                                new THREE.SphereGeometry(
                                                         0.2,
@@ -180,5 +177,12 @@ window.onload = function() {
 
     Leaf.makeLeaves(scene);
 
-    renderer.render(scene, camera);
+    var renderFunc = function() {
+      animationFrameId = window.requestAnimationFrame(function() {
+        Leaf.tick();
+        renderer.render(scene, camera);
+        renderFunc();
+      });
+    }
+    renderFunc();
 };

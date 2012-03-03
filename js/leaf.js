@@ -17,7 +17,9 @@ Leaf.prototype.makeGeometry = function() {
 
 Leaf.tick = function() {
   for(var i = Leaf.leaves.length - 1; i >= 0; i--) {
-    Leaf.leaves[i].geometry.position.x -= 0.1;
+    if (Leaf.leaves[i].geometry.position.y > -5) {
+      Leaf.leaves[i].geometry.position.y -= 0.05;
+    }
   }
 };
 
