@@ -92,7 +92,8 @@ function loaded() {
                             }
                         }
                     }
-                    renderer.render (scene, camera);
+                    Leaf.tick();
+                    renderer.render(scene, camera);
                     
                 });
         });

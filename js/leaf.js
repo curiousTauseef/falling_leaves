@@ -4,7 +4,6 @@ var Leaf = function () {
 }
 
 Leaf.prototype = new Object();
-
 Leaf.prototype.constructor = Leaf;
 
 Leaf.prototype.makeGeometry = function() {
@@ -16,13 +15,16 @@ Leaf.prototype.makeGeometry = function() {
   this.geometry.doubleSided = true;
 };
 
-Leaf.leaves = [];
+Leaf.tick = function() {
+  for(var i = Leaf.leaves.length - 1; i >= 0; i--) {
+    Leaf.leaves[i].geometry.position.x -= 0.1;
+  }
+};
 
+Leaf.leaves = [];
 Leaf.makeLeaves = function(scene) {
   for(var i = 0; i < 100; i++) {
     var leaf = Leaf.leaves[i] = new Leaf();
     scene.add(leaf.geometry);
   }
 }
-
-
