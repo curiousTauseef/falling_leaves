@@ -136,8 +136,7 @@ document.addEventListener('DOMContentLoaded', loaded, false);
 window.onload = function() {
     renderer = new THREE.WebGLRenderer();
     renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
-    
+    $('#view').append(renderer.domElement);
     scene = new THREE.Scene();
 
     camera = new THREE.PerspectiveCamera(
