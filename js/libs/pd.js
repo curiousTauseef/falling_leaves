@@ -3459,6 +3459,10 @@ function AudioDriver(desiredSampleRate, blockSize) {
 			return swf.write(out.join(' '));
 		}
 		
+		// Value of 10,000 experimentally obtain on my Mac such that
+		// there are not gaps in play, and we don't totally thrash the
+		// the CPU by polling.  Better method desirable.
+		var checkInterval = 10000;
 		// check whether the buffer is ready for us to write more to it
 		function checkBuffer() {
 			if (swf.bufferedDuration() < minBufferDuration) {
