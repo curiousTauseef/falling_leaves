@@ -1,0 +1,15 @@
+#N canvas 308 161 425 395 10;
+#X obj 147 246 dac~;
+#X obj 169 95 r wind;
+#X obj 124 96 noise~;
+#X obj 147 156 lop~;
+#X obj 147 184 lop~ 2000;
+#X obj 147 215 *~ 0.1;
+#X text 219 170 <- filter noise source;
+#X text 109 51 wind generating patch;
+#X connect 1 0 3 1;
+#X connect 2 0 3 0;
+#X connect 3 0 4 0;
+#X connect 4 0 5 0;
+#X connect 5 0 0 1;
+#X connect 5 0 0 0;
