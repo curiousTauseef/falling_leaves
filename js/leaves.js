@@ -43,7 +43,9 @@ function setupWind() {
     pdWind.send("wind", 147.42131092488248);
   }
 
-  pdWind = new Pd(44100, 200, true);
+  pdWind = new Pd(44100, // desired sample rate
+                  200, // block size
+                  false); // debugging turned off
   pdWind.load("js/libs/wind.pd", pdLoadCallback);
 }
 
