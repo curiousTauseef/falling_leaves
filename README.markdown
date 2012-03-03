@@ -3,7 +3,13 @@
 
 # Libraries and Tools
 
-HTML5 Boilerplate, jQuery, Three.js, Underscore.js
+* HTML5 Boilerplate
+* jQuery
+* Three.js
+* Underscore.js
+* Ammo.js
+* Zigfu
+* Oliver Hunt's fluid simulator
 
 # LICENSE
 
