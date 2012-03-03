@@ -1,3 +1,5 @@
+/*global Pd:false, console:false, zig:false, THREE:false */
+
 var cube, scene, camera, renderer;
 
 var skeletonPoints = 
@@ -32,6 +34,18 @@ var sphereMaterial =
                                   {
                                       color: 0xCC0000
                                   });
+
+var pdWind;
+function setupWind() {
+    
+  function pdLoadCallback () {
+    pdWind.play();
+    pdWind.send("wind", 147.42131092488248);
+  }
+
+  pdWind = new Pd(44100, 200, true);
+  pdWind.load("js/libs/wind.pd", pdLoadCallback);
+}
 
 // Initialize our skeleton points.
 var skeletonObjs = {};
@@ -129,6 +143,8 @@ function loaded() {
       console.log('SwipeDetector: Swipe direction: ' + dir);
         });
     zig.singleUserSession.addListener(swipeDetector);
+    
+    setupWind();
 }
 
 document.addEventListener('DOMContentLoaded', loaded, false);

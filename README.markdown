@@ -10,6 +10,8 @@
 * Ammo.js
 * Zigfu
 * Oliver Hunt's fluid simulator
+* Chris McCormick's [WebPD](https://github.com/chr15m/WebPd)
+* Agoston Nagy's [wind.pd patch](http://www.binaura.net/stc/fp/?x=entry:entry120124-173444)
 
 # LICENSE
 
