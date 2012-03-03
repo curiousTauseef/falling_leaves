@@ -1,6 +1,9 @@
 # Falling Leaves
 
 
+# Libraries and Tools
+
+HTML5 Boilerplate, jQuery, Three.js, Underscore.js
 
 # LICENSE
 
