@@ -176,6 +176,8 @@ window.onload = function() {
     var light = new THREE.PointLight( 0xFFFF00 );
     light.position.set( 10, 0, 10 );
     scene.add(light);
-    
+
+    Leaf.makeLeaves(scene);
+
     renderer.render(scene, camera);
 };
