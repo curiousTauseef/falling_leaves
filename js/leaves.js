@@ -95,12 +95,25 @@ function toggleZAxis() {
 
 var floor;
 function toggleFloor() {
-    showFloor != showFloor;
+    showFloor = !showFloor;
     if (showFloor) {
         scene.add(floor);
     } else {
         scene.remove(floor);
     }
+}
+
+function toggleSkeleton() {
+    showSkeleton = !showSkeleton;
+    if (showSkeleton) {
+        for (objName in skeletonObjs) {
+            scene.add(skeletonObjs[objName]);
+        }
+    } else {
+        for (objName in skeletonObjs) {
+            scene.remove(skeletonObjs[objName]);
+        }
+    }        
 }
 
 var scareCrow = {
@@ -151,7 +164,7 @@ function dumpSkeleton() {
 }
 
 $(document).keydown(function(e) {
-	console.log(e);
+	// console.log(e);
 	if (e.keyCode == 37) { 
 	    // left
 	} else if (e.keyCode == 39) {
@@ -161,14 +174,16 @@ $(document).keydown(function(e) {
 	    // up
 	} else if (e.keyCode == 40) {
 	    // down
-        } else if (e.keyCode == 15) {
+        } else if (e.keyCode == 68) {
+            toggleSkeleton();
+        } else if (e.keyCode == 70) {
             toggleFloor();
         } else if (e.keyCode == 88) {
             toggleXAxis();
-        } else if (e.keyCode == 99) {
+        } else if (e.keyCode == 89) {
             toggleYAxis();
-        } else if (e.keyCode == 100) {
-            toogleZAxis();
+        } else if (e.keyCode == 90) {
+            toggleZAxis();
         } else if (e.keyCode == 83) {
             useScareCrow = !useScareCrow;
             console.log(useScareCrow);
@@ -396,9 +411,11 @@ window.onload = function() {
                                );
             skeletonObjs[k] = ball;
             skeletonPositions[k] = {position: new THREE.Vector3(0,0,0)};
-            if (showSkeleton)
-                scene.add( ball );
         }
+    }
+    if (showSkeleton) {
+        showSkeleton = false;
+        toggleSkeleton();
     }
 
     for (var k in limbs) {
