@@ -49,7 +49,8 @@ Leaf.prototype.tick = function() {
 };
 
 Leaf.prototype.setupGeometry = function() {
-  this.geometry = new THREE.Mesh(Leaf.models.plane, new THREE.MeshBasicMaterial( { map: Leaf.textures.leaf1, transparent: true, depthTest: false, color: Math.random() * 0xffffff } ));
+  var texture = Leaf.textures[parseInt(Math.random() * Leaf.textures.length)];
+  this.geometry = new THREE.Mesh(Leaf.models.plane, new THREE.MeshBasicMaterial( { map: texture, transparent: true, depthTest: false, color: Math.random() * 0xffffff } ));
   this.geometry.doubleSided = true;
 };
 
@@ -66,7 +67,7 @@ Leaf.time = function() {
 }
 
 Leaf.models = {};
-Leaf.textures = {};
+Leaf.textures = [];
 Leaf.leaves = [];
 Leaf.makeLeaves = function(scene) {
   Leaf.loadModels(function() {
@@ -89,14 +90,16 @@ Leaf.loadModels = function(callback) {
 //  var loader = new THREE.JSONLoader();
 //  loader.createModel( leafView1, modelLoaded('leaf'), null );
 
+  var loaded = 0;
   function checkIfLoaded() {
-    if (Leaf.textures.leaf1) {
-      console.log("loaded");
-      callback();
-    }
+    loaded += 1
+    if (loaded == 4) callback();
   }
 
   Leaf.models.plane = new THREE.PlaneGeometry(10, 10);
   Leaf.models.leaf = new LeafObj();
-  Leaf.textures.leaf1 = THREE.ImageUtils.loadTexture("js/obj/Leaf_8_Color.png", THREE.UVMapping, checkIfLoaded);
+  Leaf.textures.push(THREE.ImageUtils.loadTexture("js/obj/Leaf_8_Color.png", THREE.UVMapping, checkIfLoaded));
+  Leaf.textures.push(THREE.ImageUtils.loadTexture("js/obj/leafX.png", THREE.UVMapping, checkIfLoaded));
+  Leaf.textures.push(THREE.ImageUtils.loadTexture("js/obj/leafY.png", THREE.UVMapping, checkIfLoaded));
+  Leaf.textures.push(THREE.ImageUtils.loadTexture("js/obj/leafZ.png", THREE.UVMapping, checkIfLoaded));
 };
