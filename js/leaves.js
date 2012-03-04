@@ -1,4 +1,4 @@
-/*global Pd:false, console:false, zig:false, THREE:false, $:false,
+/*global audioLib:false, console:false, zig:false, THREE:false, $:false,
   window:false */
 
 var cube, scene, camera, renderer, animationFrameId;
@@ -43,33 +43,54 @@ function setupControls() {
                         right: "10px", bottom: "10px", "z-index": 10000});
 }
 
-var lowPassFilterCutoff = 150;
-var pdWind;
-function setupWind() {
-  function pdLoadCallback() {
-    setupControls();
-    pdWind.send("wind", lowPassFilterCutoff);
-  }
 
-  pdWind = new Pd(44100, // desired sample rate
-                  200, // block size
-                  true); // debugging turned off
-  pdWind.load("js/libs/wind.pd", pdLoadCallback);
+var dev, osc, flt, lfo, stepSeq;
+var _playing = false;
+
+function fillAudioBuffer(buffer, channelCount){
+    if (_playing) {
+        // Fill the buffer with the oscillator output.
+        osc.append(buffer, channelCount);
+        flt.append(buffer);
+    }
 }
 
-
-var _playing = false;
 function toggleSound(e) {
   console.log('toggleSound');
   if (_playing) {
-    pdWind.stop();    
     _playing = false;
     // YYY set button to indicate that it will turn on sound
   } else {
-    pdWind.play();
-    pdWind.send("wind", lowPassFilterCutoff);
+
     _playing = true;
+    // YYY set button to indicate that it will turn off sound
   }
+}
+
+function setupWind() {
+    // Create an instance of the AudioDevice class
+    dev = audioLib.AudioDevice(
+      fillAudioBuffer /* callback for the buffer fills */,
+      2 /* channelCount */);
+
+    // Create an instance of the Oscillator class
+    osc = audioLib.Oscillator(dev.sampleRate /* sampleRate */, 440 /* frequency */);
+    // Create an instance of the Filter class
+    flt = audioLib.LP12Filter.createBufferBased(2 /* channelCount */, dev.sampleRate, 17000 /* cutoff (in Hz) */, 15 /* resonance */);
+    // Set the oscillator wave shape.
+    osc.waveShape = 'triangle';
+
+    setupControls();
+    
+      // Create the LFO
+//    lfo = audioLib.Oscillator(dev.sampleRate, 0.25 /* frequency */);
+    // Create the Step Sequencer
+//    stepSeq = audioLib.StepSequencer(dev.sampleRate, 250 /* step length, in ms */, [0.3, 0.25, 0.75, 0.01] /* array of step values */, 0.5 /* attack time, 0-1 */);
+
+    // Add the automation
+    //osc.addAutomation('frequency' /* parameter name */, lfo /* automation source */, 0.2 /* amount */, 'additiveModulation' /* automation operation, additiveModulation is origVal + origVal * automVal * amount */);
+    // flt.addAutomation('cutoff', stepSeq, 1, 'modulation');
+    
 }
 
 // Initialize our skeleton points.
