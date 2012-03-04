@@ -5,6 +5,24 @@ var skeletonPoints =
  Head:1,
  Neck:2,
  Torso:3,
+ LeftShoulder:6,
+ LeftElbow:7,
+ LeftHand:9,
+ RightShoulder:12,
+ RightElbow:13,
+ RightHand:15,
+ LeftHip:17,
+ LeftKnee:18,
+ LeftFoot:20,
+ RightHip:21,
+ RightKnee:22,
+ RightFoot:24};
+
+    /*
+{Invalid:0,
+ Head:1,
+ Neck:2,
+ Torso:3,
  Waist:4,
  LeftCollar:5,
  LeftShoulder:6,
@@ -26,15 +44,44 @@ var skeletonPoints =
  RightKnee:22,
  RightAnkle:23,
  RightFoot:24};
+    */
 
-var sphereMaterial =
-    new THREE.MeshLambertMaterial(
-                                  {
-                                      color: 0xCC0000
-                                  });
+var limbs = {
+    LeftForearm: 25,
+    LeftUpperarm: 26,
+    RightForearm: 27,
+    RightUpperarm: 28,
+};
+/*
+    LeftThigh: 29,
+    LeftCalf: 30,
+    RightThigh: 31,
+    RightCalf: 32
+};
+*/
+
+var limbMap = {
+    LeftForearm: ["LeftElbow", "LeftHand"],
+    LeftUpperarm: ["LeftShoulder", "LeftElbow"],
+    RightForearm: ["RightElbow", "RightHand"],
+    RightUpperarm: ["RightShoulder", "RightElbow"],
+}
+
+var sphereMaterial = new THREE.MeshLambertMaterial({color: 0xCC0000});
 
 // Initialize our skeleton points.
 var skeletonObjs = {};
+
+function hitBodyTest(pos) {
+    //   for (skeletonPointName in skeletonObjs) {
+        var skeletonPoint = skeletonObjs["Head"];
+        if (pos.distanceTo(skeletonPoint.position) < 1) {
+            console.log("leaf hit! at ");
+            console.log("x= " + pos.x + " y=" + pos.y + " z=" + pos.z);
+            return true;
+        }
+        //    }
+}
 
 function loaded() {
     zig.embed();
@@ -58,32 +105,41 @@ function loaded() {
     // the zig object will call the radar object's callback functions.
     zig.addListener(radar);
 
-
     var frame = 0;
     var engager = zig.EngageUsersWithSkeleton(1);
     engager.addEventListener('userengaged', function(user) {
             console.log('User engaged: ' + user.id);
             user.addEventListener('userupdate', function(user) {
                     frame++;
-                    var debug = (frame % 40) == 0;
-                    if (debug) console.log('user skeleton', user.skeleton);
-                    if (debug) console.log('Head position: ' + user.skeleton[zig.Joint.Head].position);
+                    var debug = (frame % 60) == 0;
+                    //                    if (debug) console.log('user skeleton', user.skeleton);
+                    //                    if (debug) console.log('Head position: ' + user.skeleton[zig.Joint.Head].position);
                     var xrange = 400;
                     var yrange = 400;
                     var zrange = 400;
+                    var leftElbowRotation = undefined;
+                    var rightElbowRotation = undefined;
+                    var jointRotations = [];
                     for (var k in skeletonPoints) {
-                        if (debug) console.log("k = " + k);
+                        //                        if (debug) console.log("k = " + k);
                         if (skeletonPoints.hasOwnProperty(k) && k != "Invalid") {
-                            if (debug) console.log("skeletonPoints.k " + skeletonPoints[k]);
+                            //                            if (debug) console.log("skeletonPoints.k " + skeletonPoints[k]);
                             if (user.skeleton.hasOwnProperty(skeletonPoints[k])) {
                                 var pos = user.skeleton[skeletonPoints[k]].position;
+                                // Extract rotations for elbows.
+                                if (user.skeleton[skeletonPoints[k]].hasOwnProperty("rotation")) {
+                                    jointRotations[k] = user.skeleton[skeletonPoints[k]].rotation;
+                                }
                                 var ball = skeletonObjs[k];
                                 var xpos = pos[0]/ xrange;
                                 var ypos = pos[1]/ yrange;
                                 var zpos = pos[2]/ zrange;
-                                if (debug) console.log("" + pos[0] + ", " + pos[1] + ", " + pos[2]);
+                                //                                if (debug) console.log("" + pos[0] + ", " + pos[1] + ", " + pos[2]);
                                 if (ball != undefined) {
                                     ball.position = new THREE.Vector3(pos[0]/xrange, pos[1]/yrange, pos[2]/zrange);
+                                    if (k == "Head") {
+                                        if (debug) console.log("head position", ball.position);
+                                    }
                                 } else {
                                     if (debug) console.log('did not find object for ', k);
                                 }
@@ -92,6 +148,70 @@ function loaded() {
                             }
                         }
                     }
+                    var limbName;
+                    var lMap = ["LeftForearm", "LeftUpperarm", "RightForearm", "RightUpperarm"];
+                    for (var i = 0; i < lMap.length; i++) {
+                        limbName = lMap[i];
+                        //if (debug) console.log('limbName ' + limbName);
+                        var joint = limbMap[limbName][0];
+                        //if (debug) console.log('joint ' + joint);
+                        var jointRotation = jointRotations[joint];
+                        //if (debug) console.log('jointRotation', jointRotation);
+                        if (jointRotation) {
+                            //
+                            // Build Limb
+                            //
+                            // limbJointA is the endpoint of the limb.
+                            var limbJointA = limbMap[limbName][1];
+                            // limbJointB is the base of the limb.  Rotation is relative to this point.
+                            var limbJointB = limbMap[limbName][0];
+                            var limbPosA = skeletonObjs[limbJointA].position;
+                            //if (debug) console.log(limbJointA, ' pos ', limbPosA);
+                            var limbPosB = skeletonObjs[limbJointB].position;
+                            //if (debug) console.log(limbJointB, ' pos ' , limbPosB);
+                            var limbObjLength = limbPosA.distanceTo(limbPosB);
+                            //if (debug) console.log(limbName, ' length' + limbObjLength);
+                            var limbObj = skeletonObjs[limbName];
+                            // We need to use manual matrices since we are getting orientation data from
+                            // the Kinect/Zigfu in rotation matrix format.
+                            limbObj.matrixAutoUpdate = false;
+                            limbObj.matrixWorldNeedsUpdate = true;
+                            // need a map from limbJointB names into an array of rotation values.
+                            var limbObjOrientation = jointRotation; // array 9
+                            //if (debug) console.log(limbObjOrientation);
+                            var rotateMatrix = new THREE.Matrix4(limbObjOrientation[0],
+                                                                 limbObjOrientation[3],
+                                                                 limbObjOrientation[6],
+                                                                 0,
+
+                                                                 limbObjOrientation[1],
+                                                                 limbObjOrientation[4],
+                                                                 limbObjOrientation[7],
+                                                                 0,
+
+                                                                 limbObjOrientation[2],
+                                                                 limbObjOrientation[5],
+                                                                 limbObjOrientation[8],
+                                                                 0,
+
+                                                                 0,
+                                                                 0,
+                                                                 0,
+                                                                 1);
+                            var transMatrix = new THREE.Matrix4();
+                            transMatrix.setTranslation((limbPosA.x + limbPosB.x)/2, 
+                                                       (limbPosA.y + limbPosB.y)/2, 
+                                                       (limbPosA.z + limbPosB.z)/2);
+                    
+                            var scaleMatrix = new THREE.Matrix4();
+                            scaleMatrix.setScale(limbObjLength, limbObjLength/2, limbObjLength/2);
+                            limbObj.matrix = transMatrix;
+                            limbObj.matrix.multiplySelf(rotateMatrix);
+                            limbObj.matrix.multiplySelf(scaleMatrix);
+                        }
+                    }
+                    renderer.render (scene, camera);
+                    
                 });
         });
     engager.addEventListener('userdisengaged', function(user) {
@@ -110,23 +230,6 @@ function loaded() {
     zig.singleUserSession.addEventListener('sessionend', function() {
             console.log('Session ended')
                 });
-    var swipeDetector = zig.controls.SwipeDetector();
-    swipeDetector.addEventListener('swipeup', function(pd) {
-      console.log('SwipeDetector: Swipe Up');
-        });
-    swipeDetector.addEventListener('swipedown', function(pd) {
-      console.log('SwipeDetector: Swipe Down');
-        });
-    swipeDetector.addEventListener('swipeleft', function(pd) {
-      console.log('SwipeDetector: Swipe Left');
-        });
-    swipeDetector.addEventListener('swiperight', function(pd) {
-        console.log('SwipeDetector: Swipe Right');
-        });
-    swipeDetector.addEventListener('swipe', function(dir) {
-      console.log('SwipeDetector: Swipe direction: ' + dir);
-        });
-    zig.singleUserSession.addListener(swipeDetector);
 }
 
 document.addEventListener('DOMContentLoaded', loaded, false);
@@ -143,31 +246,28 @@ window.onload = function() {
                                          0.1,            // Near plane
                                          10000           // Far plane
                                          );
-    camera.position.set( 0, 0, 20 );
+    camera.position.set( 0, 0, 15 );
     camera.lookAt( scene.position );
 
     scene.add(camera);
 
-    /*
-      NOTE(tracy): Utility cube for debugging.
-    cube = new THREE.Mesh(new THREE.CubeGeometry( 0.5, 0.5, 0.5 ),
-                          new THREE.MeshLambertMaterial( { color: 0xFF0000 } )
-                          );
-    scene.add( cube );
-    */
-
     for (var k in skeletonPoints) {
         if (skeletonPoints.hasOwnProperty(k) && k != "Invalid" && k != "Waist") {
-            var ball =
-                new THREE.Mesh(
-                               new THREE.SphereGeometry(
-                                                        0.2,
-                                                        16,
-                                                        16),
-                               sphereMaterial);
+            var ball = 
+                new THREE.Mesh(new THREE.CubeGeometry( 0.5, 0.5, 0.5 ),
+                               new THREE.MeshLambertMaterial( { color: 0xFF0000 } )
+                               );
             skeletonObjs[k] = ball;
-            console.log("point = " + k);
             scene.add( ball );
+        }
+    }
+
+    for (var k in limbs) {
+        if (limbs.hasOwnProperty(k)) {
+            var limb = new THREE.Mesh(new THREE.CubeGeometry(1, 1, 1),
+                                      new THREE.MeshLambertMaterial({color: 0x0000FF}));
+            skeletonObjs[k] = limb;
+            scene.add(limb);
         }
     }
 
