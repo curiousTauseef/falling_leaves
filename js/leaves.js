@@ -1,3 +1,6 @@
+/*global audioLib:false, console:false, zig:false, THREE:false, $:false,
+  window:false */
+
 var cube, scene, camera, renderer, animationFrameId;
 
 var skeletonPoints =
@@ -17,6 +20,55 @@ var skeletonPoints =
  RightHip:21,
  RightKnee:22,
  RightFoot:24};
+
+function setupUIControls() {
+    $('body').append('<div id="controls"></div>');
+    $("#controls").append(
+      '<button id="sound" onclick="toggleSound();">Sound</button>');
+    $("#controls").css({position: "fixed", display: "block", 
+                        right: "10px", bottom: "10px", "z-index": 10000});
+}
+
+
+var audioDevice, noiseGen, biquadBandPass;
+
+var _playing = false;
+function fillAudioBuffer(buffer, channelCount){
+    if (_playing) {
+        // Fill the buffer with the oscillator output.
+        noiseGen.append(buffer, channelCount);
+        biquadBandPass.append(buffer);
+    }
+}
+
+function toggleSound(e) {
+  if (_playing) {
+    _playing = false;
+    // XXX set button to indicate that it will turn on sound
+  } else {
+
+    _playing = true;
+    // XXX set button to indicate that it will turn off sound
+  }
+}
+
+function setupWind() {
+    // Create an instance of the AudioDevice class
+    audioDevice = audioLib.AudioDevice(
+      fillAudioBuffer /* callback for the buffer fills */,
+      2 /* channelCount */);
+
+    // Create an instance of the Oscillator class
+    noiseGen = audioLib.Noise(audioDevice.sampleRate, audioLib.Noise.pink);
+
+    biquadBandPass = audioLib.effects.BiquadBandPassFilter.createBufferBased(
+          2, /* channelCount */
+          audioDevice.sampleRate, /* sample rate of the device (Uint) */
+          0.0001, /* Center frequency of filter: 0dB gain at center peak (Float)*/
+          0.0001); /* Bandwidth in octaves (Float) */
+
+    setupUIControls();
+}
 
 var limbs = {
     LeftForearm: 25,
@@ -368,6 +420,8 @@ function loaded() {
     zig.singleUserSession.addEventListener('sessionend', function() {
             console.log('Session ended')
                 });
+    
+    setupWind();
 }
 
 // Zigfu wants to be loaded on this event.

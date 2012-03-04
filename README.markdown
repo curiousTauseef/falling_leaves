@@ -17,6 +17,7 @@ See: https://github.com/mrdoob/three.js/wiki/How-to-run-things-locally
 * Three.js
 * Zigfu
 * Oliver Hunt's fluid simulator
+* audiolib.js
 
 # LICENSE
 
