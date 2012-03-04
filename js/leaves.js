@@ -103,6 +103,17 @@ var skeletonDeltas = {};
 // Track the leaves stuck to the body.
 var bodyLeaves = [];
 
+function getWindVelocity() {
+    // XXX should really have a random base, which is this effected
+    // temporarily by changes in hand (and/or body?) motion
+    return 5;
+}
+
+function getHandVelocity() {
+    // XXX should actually be computed from hand events 
+    return 2;
+}
+
 function handsTogether() {
     var rightHandPoint = skeletonObjs["RightHand"];
     var leftHandPoint = skeletonObjs["LeftHand"];
