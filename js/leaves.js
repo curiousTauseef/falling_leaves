@@ -44,13 +44,13 @@ function setupControls() {
 }
 
 
-var dev, osc, flt, lfo, stepSeq;
+var dev, noiseGen, flt, lfo, stepSeq;
 var _playing = false;
 
 function fillAudioBuffer(buffer, channelCount){
     if (_playing) {
         // Fill the buffer with the oscillator output.
-        osc.append(buffer, channelCount);
+        noiseGen.append(buffer, channelCount);
         flt.append(buffer);
     }
 }
@@ -74,11 +74,10 @@ function setupWind() {
       2 /* channelCount */);
 
     // Create an instance of the Oscillator class
-    osc = audioLib.Oscillator(dev.sampleRate /* sampleRate */, 440 /* frequency */);
+    noiseGen = audioLib.Noise(dev.sampleRate, audioLib.Noise.pink);
+    
     // Create an instance of the Filter class
     flt = audioLib.LP12Filter.createBufferBased(2 /* channelCount */, dev.sampleRate, 17000 /* cutoff (in Hz) */, 15 /* resonance */);
-    // Set the oscillator wave shape.
-    osc.waveShape = 'triangle';
 
     setupControls();
     
@@ -88,7 +87,6 @@ function setupWind() {
 //    stepSeq = audioLib.StepSequencer(dev.sampleRate, 250 /* step length, in ms */, [0.3, 0.25, 0.75, 0.01] /* array of step values */, 0.5 /* attack time, 0-1 */);
 
     // Add the automation
-    //osc.addAutomation('frequency' /* parameter name */, lfo /* automation source */, 0.2 /* amount */, 'additiveModulation' /* automation operation, additiveModulation is origVal + origVal * automVal * amount */);
     // flt.addAutomation('cutoff', stepSeq, 1, 'modulation');
     
 }
