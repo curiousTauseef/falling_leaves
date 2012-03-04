@@ -173,6 +173,7 @@ window.onload = function() {
 
     var light = new THREE.PointLight( 0xFFFF00 );
     light.position.set( 10, 0, 10 );
+    scene.fog = new THREE.FogExp2( 0xffffff, 0.02 );
     scene.add(light);
 
     Leaf.makeLeaves(scene);
