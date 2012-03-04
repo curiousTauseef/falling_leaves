@@ -34,7 +34,7 @@ function setupUIControls() {
 }
 
 
-var audioDevice, noiseGen, biquadBandPass;
+var audioDevice, noiseGen, biquadBandPass, gain;
 
 var _playing = false;
 function fillAudioBuffer(buffer, channelCount){
@@ -42,6 +42,8 @@ function fillAudioBuffer(buffer, channelCount){
         // Fill the buffer with the oscillator output.
         noiseGen.append(buffer, channelCount);
         biquadBandPass.append(buffer);
+        gain.setParam("gain", getWindVelocity());
+        gain.append(buffer);
     }
 }
 
@@ -70,6 +72,11 @@ function setupWind() {
           audioDevice.sampleRate, /* sample rate of the device (Uint) */
           0.0001, /* Center frequency of filter: 0dB gain at center peak (Float)*/
           0.0001); /* Bandwidth in octaves (Float) */
+
+    gain = audioLib.effects.GainController.createBufferBased(
+      2, /* channelCount */
+      audioDevice.sampleRate, /* sample rate of the device (Uint) */
+      1); /* gain, a multiplier for the sample, defaults to 1 (Uint) */ 
 
     setupUIControls();
 }
@@ -107,6 +114,23 @@ var skeletonDeltas = {};
 
 // Track the leaves stuck to the body.
 var bodyLeaves = [];
+
+function getWindVelocity() {
+    // XXX should really have a random base, which is this effected
+    // temporarily by changes in hand (and/or body?) motion
+    // var slowGlobalDt = 0.00675;
+    // var fastGlobalDt = 0.2;
+    // 0.3 -> 0.00675
+    // 1.0 -> .2
+    // 0.7 :  0.19325
+    var percent = globalDt / fastGlobalDt;
+    return 0.3 + (percent * 0.7);
+}
+
+function getHandVelocity() {
+    // XXX should actually be computed from hand events 
+    return 2;
+}
 
 var xaxis;
 var xaxisknob;
@@ -247,11 +271,15 @@ $(document).keydown(function(e) {
 	    // right
             dumpSkeleton();
 	} else if (e.keyCode == 38) {
-            globalDt += 0.019325;
 	    // up
+            globalDt += 0.019325;
+            if (globalDt >= fastGlobalDt) 
+                globalDt = fastGlobalDt;
 	} else if (e.keyCode == 40) {
-            globalDt -= 0.019325;
 	    // down
+            globalDt -= 0.019325;
+            if (globalDt < slowGlobalDt)
+                globalDt = slowGlobalDt;
         } else if (e.keyCode == 65) {
             toggleAll();
         } else if (e.keyCode == 67) {

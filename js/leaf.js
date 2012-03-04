@@ -1,3 +1,5 @@
+/* global: getWindVelocity */
+
 var Leaf = function() {
   var scope = this;
   this.setupGeometry();
@@ -46,6 +48,7 @@ Leaf.prototype.tick = function() {
     // Sum your forces into fx and fy.
     //var fx = 0;
     var fx = -9.8 + this.velocity.x * this.velocity.x;
+      //var fx = getWindVelocity();
     var fy = -9.8 + this.velocity.y * this.velocity.y;
     var fz = 0;
 
