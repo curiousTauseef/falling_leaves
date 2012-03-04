@@ -1,4 +1,5 @@
-/*global Pd:false, console:false, zig:false, THREE:false */
+/*global Pd:false, console:false, zig:false, THREE:false, $:false,
+  window:false */
 
 var cube, scene, camera, renderer;
 
@@ -34,19 +35,41 @@ var sphereMaterial =
                                   {
                                       color: 0xCC0000
                                   });
+function setupControls() {
+    $('body').append('<div id="controls"></div>');
+    $("#controls").append(
+      '<button id="sound" onclick="toggleSound();">Sound</button>');
+    $("#controls").css({position: "fixed", display: "block", 
+                        right: "10px", bottom: "10px", "z-index": 10000});
+}
 
+var lowPassFilterCutoff = 150;
 var pdWind;
 function setupWind() {
-    
-  function pdLoadCallback () {
-    pdWind.play();
-    pdWind.send("wind", 147.42131092488248);
+  function pdLoadCallback() {
+    setupControls();
+    pdWind.send("wind", lowPassFilterCutoff);
   }
 
   pdWind = new Pd(44100, // desired sample rate
                   200, // block size
-                  false); // debugging turned off
+                  true); // debugging turned off
   pdWind.load("js/libs/wind.pd", pdLoadCallback);
+}
+
+
+var _playing = false;
+function toggleSound(e) {
+  console.log('toggleSound');
+  if (_playing) {
+    pdWind.stop();    
+    _playing = false;
+    // YYY set button to indicate that it will turn on sound
+  } else {
+    pdWind.play();
+    pdWind.send("wind", lowPassFilterCutoff);
+    _playing = true;
+  }
 }
 
 // Initialize our skeleton points.
