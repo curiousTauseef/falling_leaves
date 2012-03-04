@@ -1,7 +1,11 @@
 /*global audioLib:false, console:false, zig:false, THREE:false, $:false,
   window:false */
 
-var cube, scene, camera, renderer, animationFrameId;
+var slowGlobalDt = 0.00675;
+var fastGlobalDt = 0.2;
+
+var cube, scene, camera, renderer, animationFrameId, globalDt = slowGlobalDt;
+
 
 var skeletonPoints =
 {Invalid:0,
@@ -93,11 +97,11 @@ var limbMap = {
 }
 
 // Allow for configuring visibility of various helpers.
-var showSkeleton = true;
-var showXAxis = false;
-var showYAxis = false;
-var showZAxis = false;
-var showFloor = false;
+    var showSkeleton = true;
+var showXAxis = true;
+var showYAxis = true;
+var showZAxis = true;
+var showFloor = true;
 var useScareCrow = false;
 
 // Initialize our skeleton three.js objects. For rendering.
@@ -115,7 +119,13 @@ var bodyLeaves = [];
 function getWindVelocity() {
     // XXX should really have a random base, which is this effected
     // temporarily by changes in hand (and/or body?) motion
-    return 0.3;
+    // var slowGlobalDt = 0.00675;
+    // var fastGlobalDt = 0.2;
+    // 0.3 -> 0.00675
+    // 1.0 -> .2
+    // 0.7 :  0.19325
+    var percent = globalDt / fastGlobalDt;
+    return 0.3 + (percent * 0.7);
 }
 
 function getHandVelocity() {
@@ -232,6 +242,28 @@ function dumpSkeleton() {
     }
 }
 
+var cameraFront = true;
+function toggleCamera() {
+    cameraFront = !cameraFront;
+    if (cameraFront) {
+        camera.position.set(0, 3, 15);
+        var target = new THREE.Vector3(0, 3, -200);
+        camera.lookAt(target);
+    } else {
+        camera.position.set(15, 15, 15 );
+        var target = new THREE.Vector3(3, 3, 3);
+        camera.lookAt(target);
+    }        
+}
+
+function toggleAll() {
+    toggleSkeleton();
+    toggleFloor();
+    toggleXAxis();
+    toggleYAxis();
+    toggleZAxis();
+}
+
 $(document).keydown(function(e) {
 	// console.log(e);
 	if (e.keyCode == 37) { 
@@ -241,8 +273,18 @@ $(document).keydown(function(e) {
             dumpSkeleton();
 	} else if (e.keyCode == 38) {
 	    // up
-	} else if (e.keyCode == 40) {
+            globalDt += 0.019325;
+            if (globalDt >= fastGlobalDt) 
+                globalDt = fastGlobalDt;
+	} else if (e.keyCode == 40 || e.keyCode == 66) {
 	    // down
+            globalDt -= 0.019325;
+            if (globalDt < slowGlobalDt)
+                globalDt = slowGlobalDt;
+        } else if (e.keyCode == 65) {
+            toggleAll();
+        } else if (e.keyCode == 67) {
+            toggleCamera();
         } else if (e.keyCode == 68) {
             toggleSkeleton();
         } else if (e.keyCode == 70) {
@@ -260,6 +302,18 @@ $(document).keydown(function(e) {
     });
 
 
+function removeLeafFromBody(leaf) {
+    if (leaf == undefined) return;
+    for (var i = 0; i < bodyLeaves.length; i++) {
+        var bodyLeaf = bodyLeaves[i];
+        if (leaf == bodyLeaf) {
+            //console.log('removing body leaf');
+            delete bodyLeaves[i];
+            return;
+        }
+    }
+}
+
 function handsTogether() {
     var rightHandPoint = skeletonObjs["RightHand"];
     var leftHandPoint = skeletonObjs["LeftHand"];
@@ -267,6 +321,7 @@ function handsTogether() {
         // release all leaves.
         while (bodyLeaves.length) {
             var leaf = bodyLeaves.pop();
+            if (leaf == undefined) continue;
             leaf.bodyPart = undefined;
             leaf.velocity.x = 5;
             leaf.velocity.y = 5;
@@ -277,11 +332,11 @@ function handsTogether() {
 
 function hitBodyTest(leaf) {
     var pos = leaf.geometry.position;
-    var hitPoints = ["Head", "RightElbow", "RightHand", "LeftElbow", "LeftHand"];
+    var hitPoints = ["Head", "RightElbow", "RightHand", "LeftElbow", "LeftHand", "LeftKnee", "RightKnee", "Torso", "RightFoot", "LeftFoot"];
     for (var i = 0; i < hitPoints.length; i++) {
         var skeletonPoint = skeletonPositions[hitPoints[i]];
         var d = pos.distanceTo(skeletonPoint.position);
-        if (pos.distanceTo(skeletonPoint.position) < 1) {
+        if (pos.distanceTo(skeletonPoint.position) < 0.75) {
             leaf.bodyPart = hitPoints[i];
             bodyLeaves.push(leaf);
             var deltaVector = new THREE.Vector3();
@@ -425,6 +480,7 @@ function loaded() {
             console.log('User disengaged: ' + user.id);
         });
     zig.addListener(engager);
+    /*
     zig.singleUserSession.addEventListener('userengaged', function(user) {
             console.log('User started UI session: ' + user.id);
     });
@@ -437,7 +493,32 @@ function loaded() {
     zig.singleUserSession.addEventListener('sessionend', function() {
             console.log('Session ended')
                 });
-    
+    */
+    /*
+    var radar = {
+        onuserfound: function (user) {
+        },
+        onuserlost: function(user) {
+        },
+        ondataupdate: function(zigdata) {
+            for (var userid in zigdata.users) {
+                var user = zigdata.users[userid];
+                var pos = user.position;
+                var zrange = 4000;
+                var xrange = 4000;
+                var yrange = 4000;
+                var xpos = pos[0]/xrange;
+                var ypos = pos[1]/yrange;
+                var zpos = pos[2]/zrange;
+                // cube.position = new THREE.Vector3(pos[0]/xrange * 10, pos[1]/xrange * 2, - (pos[2]/xrange * 10));
+                //renderer.render (scene, camera);
+            }
+        }
+    };
+    // Add the radar object as a listener to the zig object, so that
+    // the zig object will call the radar object's callback functions.
+    zig.addListener(radar);
+    */
     setupWind();
 }
 
@@ -457,22 +538,28 @@ window.onload = function() {
                                          10000           // Far plane
                                          );
 
+    /*
     //camera.position.set( 3, 3, 25 );
-    camera.position.set(15, 15, 15 );
     //camera.position.set(-8, 5, -8);
     //camera.position.set(3, 3, 20);
     //camera.position.set(0, 5, -20);
 
-    //camera.position.set(0, 5, 15);
+    camera.position.set(15, 15, 15 );
+    var target = new THREE.Vector3(3, 3, 3);
 
+    //camera.position.set(0, 5, 15);
     //var target = new THREE.Vector3(0, 5, -200);
-    var target = new THREE.Vector3(0,0,0);
-    //var target = new THREE.Vector3(3, 3, 3);
+
+    //var target = new THREE.Vector3(0,0,0);
     //var target = new THREE.Vector3(0, 5, 200);
 
     //camera.lookAt( scene.position );
     camera.lookAt( target );
-    
+    */
+
+    cameraFront = !cameraFront;
+    toggleCamera();
+
     scene.add(camera);
     for (var k in skeletonPoints) {
         if (skeletonPoints.hasOwnProperty(k) && k != "Invalid" && k != "Waist") {
