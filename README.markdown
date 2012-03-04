@@ -1,13 +1,18 @@
 # Falling Leaves
 
+## Running this locally
 
-# Libraries and Tools
+Due to cross domain image issues, the easiest way to run this locally is to go into the project directory and type
+
+    python -m SimpleHTTPServer
+
+See: https://github.com/mrdoob/three.js/wiki/How-to-run-things-locally
+
+## Libraries and Tools Used
 
 * HTML5 Boilerplate
 * jQuery
 * Three.js
-* Underscore.js
-* Ammo.js
 * Zigfu
 * Oliver Hunt's fluid simulator
 * Chris McCormick's [WebPD](https://github.com/chr15m/WebPd)
