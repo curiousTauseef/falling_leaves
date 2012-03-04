@@ -129,7 +129,7 @@ function loaded() {
     zig.singleUserSession.addListener(swipeDetector);
 }
 
-document.addEventListener('DOMContentLoaded', loaded, false);
+//document.addEventListener('DOMContentLoaded', loaded, false);
 
 window.onload = function() {
     renderer = new THREE.WebGLRenderer();
