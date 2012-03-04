@@ -38,6 +38,7 @@ function fillAudioBuffer(buffer, channelCount){
         // Fill the buffer with the oscillator output.
         noiseGen.append(buffer, channelCount);
         biquadBandPass.append(buffer);
+        gain.setParam("gain", getWindVelocity());
         gain.append(buffer);
     }
 }
