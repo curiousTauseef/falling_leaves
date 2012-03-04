@@ -30,7 +30,7 @@ function setupUIControls() {
 }
 
 
-var audioDevice, noiseGen, biquadBandPass;
+var audioDevice, noiseGen, biquadBandPass, gain;
 
 var _playing = false;
 function fillAudioBuffer(buffer, channelCount){
@@ -38,6 +38,7 @@ function fillAudioBuffer(buffer, channelCount){
         // Fill the buffer with the oscillator output.
         noiseGen.append(buffer, channelCount);
         biquadBandPass.append(buffer);
+        gain.append(buffer);
     }
 }
 
@@ -66,6 +67,11 @@ function setupWind() {
           audioDevice.sampleRate, /* sample rate of the device (Uint) */
           0.0001, /* Center frequency of filter: 0dB gain at center peak (Float)*/
           0.0001); /* Bandwidth in octaves (Float) */
+
+    gain = audioLib.effects.GainController.createBufferBased(
+      2, /* channelCount */
+      audioDevice.sampleRate, /* sample rate of the device (Uint) */
+      1); /* gain, a multiplier for the sample, defaults to 1 (Uint) */ 
 
     setupUIControls();
 }
