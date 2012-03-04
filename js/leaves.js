@@ -275,7 +275,7 @@ $(document).keydown(function(e) {
             globalDt += 0.019325;
             if (globalDt >= fastGlobalDt) 
                 globalDt = fastGlobalDt;
-	} else if (e.keyCode == 40) {
+	} else if (e.keyCode == 40 || e.keyCode == 66) {
 	    // down
             globalDt -= 0.019325;
             if (globalDt < slowGlobalDt)
