@@ -19,8 +19,8 @@ Leaf.prototype.reset = function() {
   this.geometry.rotation.set(this.initialRotation.x, this.initialRotation.y, this.initialRotation.z);
 
   this.rotationDetails = { x: { initial: Math.random() * 2 * Math.PI, phase: Math.random() * 10, speed: 2000 + (Math.random() * 200 - 100) },
-                           y: { initial: Math.random() * 2 * Math.PI, phase: Math.random() * 10, speed: 2000 + (Math.random() * 200 - 100) },
-                           z: { initial: Math.random() * 2 * Math.PI, phase: Math.random() * 10, speed: 2000 + (Math.random() * 200 - 100) }};
+    y: { initial: Math.random() * 2 * Math.PI, phase: Math.random() * 10, speed: 2000 + (Math.random() * 200 - 100) },
+    z: { initial: Math.random() * 2 * Math.PI, phase: Math.random() * 10, speed: 2000 + (Math.random() * 200 - 100) }};
 
   var size = 0.05 + 0.1 * Math.random();
   this.geometry.scale.set(size, size, size);
@@ -32,9 +32,12 @@ Leaf.prototype.tick = function() {
 
     var t = Leaf.time();
     this.geometry.rotation.set(this.rotationDetails.x.initial * Math.sin((t / this.rotationDetails.x.speed) + this.rotationDetails.x.phase),
-                               this.rotationDetails.y.initial * Math.sin((t / this.rotationDetails.y.speed) + this.rotationDetails.y.phase),
-                               this.rotationDetails.z.initial * Math.sin((t / this.rotationDetails.z.speed) + this.rotationDetails.z.phase));
+        this.rotationDetails.y.initial * Math.sin((t / this.rotationDetails.y.speed) + this.rotationDetails.y.phase),
+        this.rotationDetails.z.initial * Math.sin((t / this.rotationDetails.z.speed) + this.rotationDetails.z.phase));
 
+    $("#outx").text(Leaf.getWindForce(this.geometry.position).x);
+    $("#outy").text(Leaf.getWindForce(this.geometry.position).y);
+//    this.geometry.position.x +=
   } else {
     this.stuck = true;
   }
@@ -50,13 +53,14 @@ Leaf.prototype.tick = function() {
 
 Leaf.prototype.setupGeometry = function() {
   var texture = Leaf.textures[parseInt(Math.random() * Leaf.textures.length)];
-  this.geometry = new THREE.Mesh(Leaf.models.plane, new THREE.MeshBasicMaterial( { map: texture, transparent: true, depthTest: false, color: Math.random() * 0xffffff } ));
+  this.geometry = new THREE.Mesh(Leaf.models.plane, new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthTest: false, color: Math.random() * 0xffffff }));
   this.geometry.doubleSided = true;
 };
 
 // Class methods
 
 Leaf.tick = function() {
+  Leaf.fluidField.update();
   for (var i = Leaf.leaves.length - 1; i >= 0; i--) {
     Leaf.leaves[i].tick();
   }
@@ -64,7 +68,13 @@ Leaf.tick = function() {
 
 Leaf.time = function() {
   return (new Date()).getTime();
-}
+};
+
+Leaf.getWindForce = function(v) {
+  var x = parseInt(((v.x + 50) / 100) * Leaf.fluidField.width);
+  var y = parseInt(((v.y + 50) / 100) * Leaf.fluidField.height);
+  return new THREE.Vector2(Leaf.field.getXVelocity(x, y), Leaf.field.getYVelocity(x, y));
+};
 
 Leaf.models = {};
 Leaf.textures = [];
@@ -76,6 +86,10 @@ Leaf.makeLeaves = function(scene) {
       scene.add(leaf.geometry);
     }
   });
+
+  Leaf.fluidField = new FluidField();
+  Leaf.fluidField.setResolution(30, 30);
+  Leaf.fluidField.setDisplayFunction(function(field) { Leaf.field = field; });
 };
 
 Leaf.loadModels = function(callback) {
@@ -91,6 +105,7 @@ Leaf.loadModels = function(callback) {
 //  loader.createModel( leafView1, modelLoaded('leaf'), null );
 
   var loaded = 0;
+
   function checkIfLoaded() {
     loaded += 1
     if (loaded == 4) callback();
