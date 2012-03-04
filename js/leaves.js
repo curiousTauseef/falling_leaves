@@ -90,6 +90,7 @@ var showXAxis = false;
 var showYAxis = false;
 var showZAxis = false;
 var showFloor = false;
+var useScareCrow = false;
 
 // Initialize our skeleton three.js objects. For rendering.
 var skeletonObjs = {};
@@ -113,6 +114,143 @@ function getHandVelocity() {
     // XXX should actually be computed from hand events 
     return 2;
 }
+
+var xaxis;
+var xaxisknob;
+function toggleXAxis() {
+    showXAxis = !showXAxis;
+    if (showXAxis) {
+        scene.add(xaxisknob);
+        scene.add(xaxis);
+    } else {
+        scene.remove(xaxis);
+        scene.remove(xaxisknob);
+    }
+}
+
+var yaxis;
+var yaxisknob;
+function toggleYAxis() {
+    showYAxis = !showYAxis;
+    if (showYAxis) {
+        scene.add(yaxisknob);
+        scene.add(yaxis);
+    } else {
+        scene.remove(yaxis);
+        scene.remove(yaxisknob);
+    }
+}
+
+var zaxis;
+var zaxisknob;
+function toggleZAxis() {
+    showZAxis = !showZAxis;
+    if (showZAxis) {
+        scene.add(zaxisknob);
+        scene.add(zaxis);
+    } else {
+        scene.remove(zaxis);
+        scene.remove(zaxisknob);
+    }
+}
+
+var floor;
+function toggleFloor() {
+    showFloor = !showFloor;
+    if (showFloor) {
+        scene.add(floor);
+    } else {
+        scene.remove(floor);
+    }
+}
+
+function toggleSkeleton() {
+    showSkeleton = !showSkeleton;
+    if (showSkeleton) {
+        for (objName in skeletonObjs) {
+            scene.add(skeletonObjs[objName]);
+        }
+    } else {
+        for (objName in skeletonObjs) {
+            scene.remove(skeletonObjs[objName]);
+        }
+    }        
+}
+
+var scareCrow = {
+Head: [-0.1905820083618164,4.258598327636719,4.280858764648437],
+Neck: [-0.1900673484802246,3.724918212890625,4.21179168701172],
+Torso: [-0.19340927124023438,3.1831586456298826,4.13912109375],
+LeftShoulder: [-0.5756597900390625,3.72562629699707,4.22424560546875],
+LeftElbow: [-1.2566078186035154,3.41669921875,4.309959716796875],
+LeftHand: [-2.0299581909179687,3.4282678604125976,4.19878204345703],
+RightShoulder: [0.1955251121520996,3.724210205078125,4.199337768554687],
+RightElbow: [1.0602471160888671,3.425337219238281,4.316580810546875],
+RightHand: [1.8717703247070312,3.434768409729004,4.198320922851562],
+LeftHip: [-0.44890903472900395,2.641862030029297,4.0745947265625],
+LeftKnee: [-0.395903663635254,1.5904754638671874,3.779639587402345],
+LeftFoot: [-0.395903663635254,0.539261932373047,3.779639587402345],
+RightHip: [0.055406608581542977,2.640936050415039,4.058306274414062],
+RightKnee: [0.07038476943969728,1.5755477905273438,3.81346923828125],
+RightFoot: [0.07038476943969728,0.524334259033203,3.81346923828125]
+};
+
+var threeScareCrow = {};
+
+function makeOriginScareCrow () {
+    // make left foot at origin
+    var deltaVector = new THREE.Vector3();
+    for (pointName in scareCrow) {
+        if (pointName == "LeftFoot") {
+            deltaVector.x = scareCrow[pointName][0];
+            deltaVector.y = scareCrow[pointName][1];
+            deltaVector.z = scareCrow[pointName][2];
+        }
+    }
+    for (pointName in scareCrow) {
+        var threePt = new THREE.Vector3(scareCrow[pointName][0] - deltaVector.x,
+                                        scareCrow[pointName][1] - deltaVector.y,
+                                        scareCrow[pointName][2] - deltaVector.z);
+        threeScareCrow[pointName] = threePt;
+    }
+}
+
+
+function dumpSkeleton() {
+    console.log(skeletonPositions);
+    for (var pointName in skeletonPositions) {
+        var pos = skeletonPositions[pointName].position;
+        console.log(pointName + ": [" + pos.x + "," + pos.y + "," + pos.z + "],");
+    }
+}
+
+$(document).keydown(function(e) {
+	// console.log(e);
+	if (e.keyCode == 37) { 
+	    // left
+	} else if (e.keyCode == 39) {
+	    // right
+            dumpSkeleton();
+	} else if (e.keyCode == 38) {
+	    // up
+	} else if (e.keyCode == 40) {
+	    // down
+        } else if (e.keyCode == 68) {
+            toggleSkeleton();
+        } else if (e.keyCode == 70) {
+            toggleFloor();
+        } else if (e.keyCode == 88) {
+            toggleXAxis();
+        } else if (e.keyCode == 89) {
+            toggleYAxis();
+        } else if (e.keyCode == 90) {
+            toggleZAxis();
+        } else if (e.keyCode == 83) {
+            useScareCrow = !useScareCrow;
+            console.log(useScareCrow);
+        } 
+    });
+
 
 function handsTogether() {
     var rightHandPoint = skeletonObjs["RightHand"];
@@ -189,11 +327,18 @@ function loaded() {
                                 var ball = skeletonObjs[k];
                                 var skeletonPosition = skeletonPositions[k];
                                 var xpos = pos[0]/ xrange;
-                                var ypos = pos[1]/ yrange;
+                                var ypos = pos[1]/ yrange + 3.0;
                                 var zpos = pos[2]/ zrange;
+                                
+                                // Scarecrow override
+                                if (useScareCrow) {
+                                    xpos = threeScareCrow[k].x;
+                                    ypos = threeScareCrow[k].y;
+                                    zpos = threeScareCrow[k].z;
+                                }
                                 // if (debug) console.log("" + pos[0] + ", " + pos[1] + ", " + pos[2]);
                                 if (ball != undefined) {
-                                    var p = new THREE.Vector3((pos[0]/xrange), (pos[1]/yrange) + 3.0, pos[2]/zrange);
+                                    var p = new THREE.Vector3(xpos, ypos, zpos);
                                     ball.position = p;
                                     skeletonPosition.position = p;
                                 } else {
@@ -305,14 +450,15 @@ window.onload = function() {
                                          );
 
     //camera.position.set( 3, 3, 25 );
-    //camera.position.set(15, 15, 15 );
+    camera.position.set(15, 15, 15 );
     //camera.position.set(-8, 5, -8);
     //camera.position.set(3, 3, 20);
     //camera.position.set(0, 5, -20);
 
-    camera.position.set(0, 5, 15);
+    //camera.position.set(0, 5, 15);
 
-    var target = new THREE.Vector3(0, 5, -200);
+    //var target = new THREE.Vector3(0, 5, -200);
+    var target = new THREE.Vector3(0,0,0);
     //var target = new THREE.Vector3(3, 3, 3);
     //var target = new THREE.Vector3(0, 5, 200);
 
@@ -328,9 +474,11 @@ window.onload = function() {
                                );
             skeletonObjs[k] = ball;
             skeletonPositions[k] = {position: new THREE.Vector3(0,0,0)};
-            if (showSkeleton)
-                scene.add( ball );
         }
+    }
+    if (showSkeleton) {
+        showSkeleton = false;
+        toggleSkeleton();
     }
 
     for (var k in limbs) {
@@ -343,49 +491,54 @@ window.onload = function() {
         }
     }
 
+    xaxis = new THREE.Mesh(new THREE.CubeGeometry(1, 1, 1),
+                           new THREE.MeshLambertMaterial({color: 0x00FF00}));
+    xaxis.scale.set(50, 1, 1);
+    xaxisknob = new THREE.Mesh(new THREE.CubeGeometry(1.5, 1.5, 1.5),
+                               new THREE.MeshLambertMaterial({color: 0x0000FF}));
+    xaxisknob.position.x = 5;
     if (showXAxis) {
-        var xaxis = new THREE.Mesh(new THREE.CubeGeometry(1, 1, 1),
-                                   new THREE.MeshLambertMaterial({color: 0x00FF00}));
-        xaxis.scale.set(50, 1, 1);
-        var xaxisknob = new THREE.Mesh(new THREE.CubeGeometry(1.5, 1.5, 1.5),
-                                       new THREE.MeshLambertMaterial({color: 0x0000FF}));
-        xaxisknob.position.x = 5;
-        scene.add(xaxisknob);
-        scene.add(xaxis);
+        showXAxis = false;
+        toggleXAxis();
     }
+
+    yaxis = new THREE.Mesh(new THREE.CubeGeometry(1, 1, 1),
+                           new THREE.MeshLambertMaterial({color: 0x2222FF}));
+    yaxis.scale.set(1, 10, 1);
+    yaxisknob = new THREE.Mesh(new THREE.CubeGeometry(1.5, 1.5, 1.5),
+                               new THREE.MeshLambertMaterial({color: 0x2222FF}));
+    yaxisknob.position.y = 5;
 
     if (showYAxis) {
-          var yaxis = new THREE.Mesh(new THREE.CubeGeometry(1, 1, 1),
-          new THREE.MeshLambertMaterial({color: 0x2222FF}));
-          var yaxisknob = new THREE.Mesh(new THREE.CubeGeometry(1.5, 1.5, 1.5),
-          new THREE.MeshLambertMaterial({color: 0x2222FF}));
-          yaxisknob.position.y = 5;
-          scene.add(yaxisknob);
-          yaxis.scale.set(1, 10, 1);
-          scene.add(yaxis);
+        showYAxis = false;
+        toggleYAxis();
     }
+
+    zaxis = new THREE.Mesh(new THREE.CubeGeometry(1, 1, 1),
+                           new THREE.MeshLambertMaterial({color: 0xFF0000}));
+    zaxis.scale.set(1, 1, 50);
+    zaxisknob = new THREE.Mesh(new THREE.CubeGeometry(1.5, 1.5, 1.5),
+                               new THREE.MeshLambertMaterial({color: 0xFF0000}));
+    zaxisknob.position.z = 5;
 
     if (showZAxis) {
-        var zaxis = new THREE.Mesh(new THREE.CubeGeometry(1, 1, 1),
-                                   new THREE.MeshLambertMaterial({color: 0xFF0000}));
-        zaxis.scale.set(1, 1, 50);
-        scene.add(zaxis);
-        var zaxisknob = new THREE.Mesh(new THREE.CubeGeometry(1.5, 1.5, 1.5),
-                                       new THREE.MeshLambertMaterial({color: 0xFF0000}));
-        zaxisknob.position.z = 5;
-        scene.add(zaxisknob);
+        showZAxis = false;
+        toggleZAxis();
     }
 
+    floor = new THREE.Mesh(new THREE.CubeGeometry(10, 0.5, 10),
+                           new THREE.MeshLambertMaterial({color: 0xFFAA22}));
     if (showFloor) {
-        var floor = new THREE.Mesh(new THREE.CubeGeometry(10, 0.5, 10),
-                                   new THREE.MeshLambertMaterial({color: 0xFFAA22}));
-        scene.add(floor);
+        showFloor = false;
+        toggleFloor();
     }
     
     var light = new THREE.PointLight( 0xFFFFFF );
     light.position.set( 10, 10, 10 );
     scene.fog = new THREE.FogExp2( 0xffffff, 0.02 );
     scene.add(light);
+
+    makeOriginScareCrow();
 
     Leaf.makeLeaves(scene);
 
