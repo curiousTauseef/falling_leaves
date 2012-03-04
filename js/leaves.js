@@ -44,14 +44,14 @@ function setupUIControls() {
 }
 
 
-var dev, noiseGen, flt, lfo, stepSeq;
-var _playing = false;
+var audioDevice, noiseGen, biquadBandPass;
 
+var _playing = false;
 function fillAudioBuffer(buffer, channelCount){
     if (_playing) {
         // Fill the buffer with the oscillator output.
         noiseGen.append(buffer, channelCount);
-        flt.append(buffer);
+        biquadBandPass.append(buffer);
     }
 }
 
@@ -59,36 +59,30 @@ function toggleSound(e) {
   console.log('toggleSound');
   if (_playing) {
     _playing = false;
-    // YYY set button to indicate that it will turn on sound
+    // XXX set button to indicate that it will turn on sound
   } else {
 
     _playing = true;
-    // YYY set button to indicate that it will turn off sound
+    // XXX set button to indicate that it will turn off sound
   }
 }
 
 function setupWind() {
     // Create an instance of the AudioDevice class
-    dev = audioLib.AudioDevice(
+    audioDevice = audioLib.AudioDevice(
       fillAudioBuffer /* callback for the buffer fills */,
       2 /* channelCount */);
 
     // Create an instance of the Oscillator class
-    noiseGen = audioLib.Noise(dev.sampleRate, audioLib.Noise.pink);
-    
-    // Create an instance of the Filter class
-    flt = audioLib.LP12Filter.createBufferBased(2 /* channelCount */, dev.sampleRate, 17000 /* cutoff (in Hz) */, 15 /* resonance */);
+    noiseGen = audioLib.Noise(audioDevice.sampleRate, audioLib.Noise.pink);
+
+    biquadBandPass = audioLib.effects.BiquadBandPassFilter.createBufferBased(
+          2, /* channelCount */
+          audioDevice.sampleRate, /* sample rate of the device (Uint) */
+          1.5, /* Center frequency of filter: 0dB gain at center peak (Float)*/
+          2.5); /* Bandwidth in octaves (Float) */
 
     setupUIControls();
-    
-      // Create the LFO
-//    lfo = audioLib.Oscillator(dev.sampleRate, 0.25 /* frequency */);
-    // Create the Step Sequencer
-//    stepSeq = audioLib.StepSequencer(dev.sampleRate, 250 /* step length, in ms */, [0.3, 0.25, 0.75, 0.01] /* array of step values */, 0.5 /* attack time, 0-1 */);
-
-    // Add the automation
-    // flt.addAutomation('cutoff', stepSeq, 1, 'modulation');
-    
 }
 
 // Initialize our skeleton points.
