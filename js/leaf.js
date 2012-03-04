@@ -5,18 +5,21 @@ var Leaf = function() {
 }
 Leaf.prototype = new Object();
 Leaf.prototype.constructor = Leaf;
-Leaf.numLeaves = 100;
-Leaf.maxStickTime = 100;
+Leaf.numLeaves = 1000;
+Leaf.maxStickTime = 50;
+Leaf.bodyStickTime = 5000000;
 
 // Instance methods
 
 
 Leaf.prototype.reset = function() {
+    removeLeafFromBody(this);
   this.stuck = false;
   this.bodyPart = undefined;
   this.stickTime = 0;
-  this.geometry.material.opacity = 1.0;
-  this.geometry.position = new THREE.Vector3((Math.random() * 10) - 5, (Math.random() * 20) + 10, (Math.random() * 10));
+    this.geometry.material.opacity = 1.0; // 14.5
+  //this.geometry.position = new THREE.Vector3((Math.random() * 10) - 5, (Math.random() * 20) + 10, (Math.random() * 10));
+  this.geometry.position = new THREE.Vector3((Math.random() * 0.001) + 18, (Math.random() * 20) + 10, (Math.random() * 4) + 1);
   this.initialRotation = new THREE.Vector3(Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI);
   this.geometry.rotation.set(this.initialRotation.x, this.initialRotation.y, this.initialRotation.z);
 
@@ -24,7 +27,8 @@ Leaf.prototype.reset = function() {
                            y: { initial: Math.random() * 2 * Math.PI, phase: Math.random() * 10, speed: 2000 + (Math.random() * 200 - 100) },
                            z: { initial: Math.random() * 2 * Math.PI, phase: Math.random() * 10, speed: 2000 + (Math.random() * 200 - 100) }};
 
-  var size = 0.05 + 0.1 * Math.random();
+  //var size = 0.05 + 0.1 * Math.random();
+  var size = 0.02 + 0.02 * Math.random();
   this.mass = 1.0;
   this.velocity = new THREE.Vector3(0,0,0);
   this.geometry.scale.set(size, size, size);
@@ -34,15 +38,23 @@ Leaf.prototype.tick = function() {
 
   if (!this.stuck && this.geometry.position.y > -0.1 && !this.bodyPart) {
     // Changing this time step will speedup the simulation.
-    var dt = 0.00675;
+      //var dt = 0.00675;
+      //var dt = 0.005;
+      //var dt = 0.1;
+      var dt = globalDt;
 
     // Sum your forces into fx and fy.
-    var fx = 0;
+    //var fx = 0;
+    var fx = -9.8 + this.velocity.x * this.velocity.x;
     var fy = -9.8 + this.velocity.y * this.velocity.y;
     var fz = 0;
 
     // check for near body
-    hitBodyTest(this);
+    if (! ((this.geometry.position.y > 5) || (this.geometry.position.x > 5) ||
+        (this.geometry.position.x < -5) || (this.geometry.position.z < 0) ||
+           (this.geometry.position.z > 7)) ) {
+        hitBodyTest(this);
+    }
 
     // Improved Euler integration
     var ax = fx * 1.0 / this.mass;
@@ -62,11 +74,21 @@ Leaf.prototype.tick = function() {
       this.stuck = true;
   }
   
-  if (this.stuck && !this.bodyPart) {
+  if (this.stuck || this.bodyPart) {
     this.stickTime += 1;
-    this.geometry.material.opacity = (Leaf.maxStickTime - this.stickTime) / Leaf.maxStickTime;
-    if (this.stickTime > Leaf.maxStickTime) {
-      this.reset();
+    if (this.bodyPart) {
+        /*
+          TODO(tracy): some bug here.
+        this.geometry.material.opacity = (Leaf.bodyStickTime - this.stickTime) / Leaf.bodyStickTime;
+        if (this.stickTime > Leaf.bodyStickTime) {
+            this.reset();
+        }
+        */
+    } else {
+        this.geometry.material.opacity = (Leaf.maxStickTime - this.stickTime) / Leaf.maxStickTime;
+        if (this.stickTime > Leaf.maxStickTime) {
+            this.reset();
+        }
     }
   }
 };
