@@ -30,18 +30,9 @@ function setupUIControls() {
 }
 
 
-var audioDevice, noiseGen, biquadBandPass, gain;
+var audioDevice, noiseGen, biquadLowPass, biquadBandPass, gain;
 
 var _playing = false;
-function fillAudioBuffer(buffer, channelCount){
-    if (_playing) {
-        // Fill the buffer with the oscillator output.
-        noiseGen.append(buffer, channelCount);
-        biquadBandPass.append(buffer);
-        gain.setParam("gain", getWindVelocity());
-        gain.append(buffer);
-    }
-}
 
 function toggleSound(e) {
   if (_playing) {
@@ -52,6 +43,16 @@ function toggleSound(e) {
     _playing = true;
     // XXX set button to indicate that it will turn off sound
   }
+}
+
+function fillAudioBuffer(buffer, channelCount){
+    if (_playing) {
+        // Fill the buffer with the oscillator output.
+        noiseGen.append(buffer, channelCount);
+        biquadLowPass.append(buffer);
+        gain.setParam("gain", getWindVelocity());
+        gain.append(buffer);
+    }
 }
 
 function setupWind() {
@@ -66,8 +67,8 @@ function setupWind() {
     biquadBandPass = audioLib.effects.BiquadBandPassFilter.createBufferBased(
           2, /* channelCount */
           audioDevice.sampleRate, /* sample rate of the device (Uint) */
-          0.0001, /* Center frequency of filter: 0dB gain at center peak (Float)*/
-          0.0001); /* Bandwidth in octaves (Float) */
+          100.0, /* Center frequency of filter: 0dB gain at center peak (Float)*/
+          1.0); /* Bandwidth in octaves (Float) */
 
     gain = audioLib.effects.GainController.createBufferBased(
       2, /* channelCount */
