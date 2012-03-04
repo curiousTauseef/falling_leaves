@@ -53,7 +53,7 @@ function fillAudioBuffer(buffer, channelCount){
     if (_playing) {
         // Fill the buffer with the oscillator output.
         noiseGen.append(buffer, channelCount);
-        biquadLowPass.append(buffer);
+        biquadBandPass.append(buffer);
         gain.setParam("gain", getWindVelocity());
         gain.append(buffer);
     }
