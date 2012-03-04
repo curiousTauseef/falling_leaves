@@ -35,7 +35,7 @@ var sphereMaterial =
                                   {
                                       color: 0xCC0000
                                   });
-function setupControls() {
+function setupUIControls() {
     $('body').append('<div id="controls"></div>');
     $("#controls").append(
       '<button id="sound" onclick="toggleSound();">Sound</button>');
@@ -79,7 +79,7 @@ function setupWind() {
     // Create an instance of the Filter class
     flt = audioLib.LP12Filter.createBufferBased(2 /* channelCount */, dev.sampleRate, 17000 /* cutoff (in Hz) */, 15 /* resonance */);
 
-    setupControls();
+    setupUIControls();
     
       // Create the LFO
 //    lfo = audioLib.Oscillator(dev.sampleRate, 0.25 /* frequency */);
