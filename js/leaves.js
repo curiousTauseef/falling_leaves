@@ -106,7 +106,7 @@ var bodyLeaves = [];
 function getWindVelocity() {
     // XXX should really have a random base, which is this effected
     // temporarily by changes in hand (and/or body?) motion
-    return 5;
+    return 0.3;
 }
 
 function getHandVelocity() {
