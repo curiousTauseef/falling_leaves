@@ -42,7 +42,6 @@ function fillAudioBuffer(buffer, channelCount){
 }
 
 function toggleSound(e) {
-  console.log('toggleSound');
   if (_playing) {
     _playing = false;
     // XXX set button to indicate that it will turn on sound
@@ -65,8 +64,8 @@ function setupWind() {
     biquadBandPass = audioLib.effects.BiquadBandPassFilter.createBufferBased(
           2, /* channelCount */
           audioDevice.sampleRate, /* sample rate of the device (Uint) */
-          1.5, /* Center frequency of filter: 0dB gain at center peak (Float)*/
-          2.5); /* Bandwidth in octaves (Float) */
+          0.0001, /* Center frequency of filter: 0dB gain at center peak (Float)*/
+          0.0001); /* Bandwidth in octaves (Float) */
 
     setupUIControls();
 }
