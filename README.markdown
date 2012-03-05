@@ -1,7 +1,7 @@
 # Falling Leaves
-![interaction](raw/master/fallingleaves1.png "Interacting")
+![interaction](falling_leaves/raw/master/fallingleaves1.png "Interacting")
 
-![debug mode](raw/master/fallingleaves2.png "Debugging")
+![debug mode](falling_leaves/raw/master/fallingleaves2.png "Debugging")
 
 ## Running this locally
 
