@@ -1,7 +1,7 @@
 # Falling Leaves
-![interaction](/fallingleaves1.png "Interacting")
+![interaction](fallingleaves1.png "Interacting")
 
-![debug mode](/fallingleaves2.png "Debugging")
+![debug mode](fallingleaves2.png "Debugging")
 
 ## Running this locally
 
