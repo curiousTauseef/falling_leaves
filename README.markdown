@@ -1,7 +1,7 @@
 # Falling Leaves
-![interaction](blob/master/fallingleaves1.png "Interacting")
+![interaction](blob/master/fallingleaves1.png?raw=true "Interacting")
 
-![debug mode](blob/master/fallingleaves2.png "Debugging")
+![debug mode](blob/master/fallingleaves2.png?raw=true "Debugging")
 
 ## Running this locally
 
