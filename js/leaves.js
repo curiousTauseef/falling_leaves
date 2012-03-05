@@ -97,11 +97,11 @@ var limbMap = {
 }
 
 // Allow for configuring visibility of various helpers.
-    var showSkeleton = true;
-var showXAxis = true;
-var showYAxis = true;
-var showZAxis = true;
-var showFloor = true;
+var showSkeleton = false;
+var showXAxis = false;
+var showYAxis = false;
+var showZAxis = false;
+var showFloor = false;
 var useScareCrow = false;
 
 // Initialize our skeleton three.js objects. For rendering.
@@ -125,7 +125,7 @@ function getWindVelocity() {
     // 1.0 -> .2
     // 0.7 :  0.19325
     var percent = globalDt / fastGlobalDt;
-    return 0.3 + (percent * 0.7);
+    return 0.1 + (percent * 0.9);
 }
 
 function getHandVelocity() {
@@ -288,7 +288,7 @@ $(document).keydown(function(e) {
         } else if (e.keyCode == 68) {
             toggleSkeleton();
         } else if (e.keyCode == 70) {
-            toggleFloor();
+            // toggleFloor();
         } else if (e.keyCode == 88) {
             toggleXAxis();
         } else if (e.keyCode == 89) {
