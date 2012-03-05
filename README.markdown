@@ -1,7 +1,5 @@
 # Falling Leaves
 
-See it live!  http://fallingleaves.dreamhosters.com/
-
 ## Running this locally
 
 Due to cross domain image issues, the easiest way to run this locally is to go into the project directory and type
