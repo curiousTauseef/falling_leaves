@@ -13,11 +13,12 @@ See: https://github.com/mrdoob/three.js/wiki/How-to-run-things-locally
 
 ## Libraries and Tools Used
 
-* [HTML5 Boilerplate]: http://html5boilerplate.com/
-* [jQuery]: http://jquery.com/
-* [Three.js]: http://mrdoob.github.com/three.js/
-* [Zigfu]: http://zigfu.com
-* audiolib.js
+* HTML5 Boilerplate: http://html5boilerplate.com/
+* jQuery: http://jquery.com/
+* Three.js: http://mrdoob.github.com/three.js/
+* Zigfu: http://zigfu.com
+* audiolib.js: https://github.com/jussi-kalliokoski/audiolib.js/
+
 
 # LICENSE
 
