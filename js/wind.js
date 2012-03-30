@@ -3,6 +3,7 @@ var context;
 var windGainNode;
 var windBuffer = null;
 var thunderBuffer = null;
+var gustBuffer = null;
 
 //window.addEventListener('load', initWindSound, false);
 
@@ -10,8 +11,9 @@ function initWindSound() {
     try {
         context = new webkitAudioContext();
         console.log('loading wind sound');
-        loadWindSound('/wind.wav');
+        loadWindSound('/simplewind.wav');
         loadThunderSound('/shortthunder.wav');
+        loadGustSound('/gust.wav');
     } catch (e) {
         alert('Web Audio API is not supported in this browser');
     }
@@ -89,3 +91,21 @@ function loadThunderSound(url) {
     request.send();
 }
 
+function loadGustSound(url) {
+    console.log('loading gust sound');
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'arraybuffer';
+    request.onload = function() {
+        context.decodeAudioData(request.response,
+                                function(buffer) {
+                                    console.log('decoded gust sound buffer');
+                                    if (!buffer) {
+                                        alert('error decoding wind gust buffer: ' + url);
+                                        return;
+                                    }
+                                    gustBuffer = buffer;
+                                });
+    };
+    request.send();
+}

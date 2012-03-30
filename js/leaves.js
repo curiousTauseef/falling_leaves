@@ -14,6 +14,9 @@ var slowGlobalDt = 0.00675;
 var fastGlobalDt = 0.2;
 var leafMode = 'stick'; // 'bounce'
 var handsTogetherDistance = 0.3;
+var skeletonOffscreen = false;
+var skeltonLostTranslation = new THREE.Vector3(50, 0, 50);
+var skeltonBackTranslation = new THREE.Vector3(-50, 0, -50);
 
 // Allow for configuring visibility of various helpers.
 var showSkeleton = false;
@@ -289,6 +292,30 @@ function makeOriginScareCrow () {
     }
 }
 
+/* When the user is lost, let's translate the skeleton out of the way so that
+ * leaves don't stick to a limp skeleton.
+ */
+function translateSkeleton(deltaVector) {
+    console.log('translating skeleton');
+    for (var pointName in skeletonPositions) {
+        var pos = skeletonPositions[pointName].position;
+        pos.x = pos.x + deltaVector.x;
+        pos.y = pos.y + deltaVector.y;
+        pos.z = pos.z + deltaVector.z;
+    }
+}
+
+function moveSkeletonOffscreen() {
+    translateSkeleton(skeletonLostTranslation);
+    skeletonOffscreen = true;
+}
+
+function moveSkeletonOnscreen() {
+    if (skeletonOffscreen)
+        translateSkeleton(skeletonBackTranslation);
+    skeletonOffscreen = false;
+}
+
 /* Utility function for dumping the current skeleton to the console.  This was used to
  * record the scarecrow model defined above.
  */
@@ -351,6 +378,7 @@ function releaseAllLeaves() {
  */
 function releaseSomeLeaves(jointName, throwDirectionVector, throwDirectionMagnitudeSquared) {
     var leaves;
+    playSound(gustBuffer, false);
     if (jointName == 'RightHand') {
         leaves = rightBodyLeaves;
     } else if (jointName == 'LeftHand') {
@@ -414,6 +442,15 @@ stats.domElement.style.position = 'absolute';
 stats.domElement.style.top = '0px';
 $('#view').append(stats.domElement);
 
+/* Engage graphic.
+ */
+var engage = $('<div id="engage"></div>');
+// image is 335 x 600
+var engageX = window.innerWidth / 2 - (335 / 2);
+var engageY = window.innerHeight / 2 - (600 / 2);
+engage.css({position:'fixed', top: engageY + 'px', left: engageX + 'px', display: 'block', 'z-index': 1000});
+engage.html('<img src="engage.png">');
+$('#view').append(engage);
 
 /* varbox is used to display the value of tunable parameters.
    TODO(tracy): Finish this code for fine-tuning parameters via the keyboard.
@@ -638,6 +675,7 @@ function loaded() {
     var engager = zig.EngageUsersWithSkeleton(1);
     engager.addEventListener('userengaged', function(user) {
             console.log('User engaged: ' + user.id);
+            $('#engage').hide();
             user.addEventListener('userupdate', function(user) {
                     frame++;
                     var debug = (frame % 180) == 0;
@@ -722,22 +760,20 @@ function loaded() {
     engager.addEventListener('userdisengaged', function(user) {
             console.log('User disengaged: ' + user.id);
             releaseAllLeaves();
+            $('#engage').show();
         });
     zig.addListener(engager);
-    /*
-    zig.singleUserSession.addEventListener('userengaged', function(user) {
-            console.log('User started UI session: ' + user.id);
-    });
-    zig.singleUserSession.addEventListener('userdisengaged', function(user) {
-            console.log('User ended UI session: ' + user.id);
+
+    zig.addEventListener('userfound', function(user) {
+            console.log('Found user. ID: ' + user.id);
+            moveSkeletonOnscreen();
         });
-    zig.singleUserSession.addEventListener('sessionstart', function(initialPosition) {
-            console.log('Session started at ' + initialPosition);
+    zig.addEventListener('userlost', function(user) {
+            console.log('User lost: ' + user.id);
+            releaseAllLeaves();
+            moveSkeletonOffscreen();
         });
-    zig.singleUserSession.addEventListener('sessionend', function() {
-            console.log('Session ended')
-                });
-    */
+
     initWindSound();
     //setupWind();
 }
