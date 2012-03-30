@@ -110,6 +110,11 @@ Leaf.prototype.tick = function() {
         }
     } else if (!this.stuck && this.geometry.position.y < 0.0) {
         this.stuck = true;
+    } else if (this.bodyPart) {
+        var skeletonPoint = skeletonPositions[this.bodyPart];
+        this.geometry.position.x = skeletonPoint.position.x + this.deltaVector.x;
+        this.geometry.position.y = skeletonPoint.position.y + this.deltaVector.y;
+        this.geometry.position.z = skeletonPoint.position.z + this.deltaVector.z;
     }
     if (this.stuck) {
         this.stickTime += 1;

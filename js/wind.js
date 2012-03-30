@@ -3,7 +3,11 @@ var context;
 var windGainNode;
 var windBuffer = null;
 var thunderBuffer = null;
+var thunderSource;
+var thunderGainNode;
 var gustBuffer = null;
+var gustSource;
+var gustGainNode;
 
 //window.addEventListener('load', initWindSound, false);
 
@@ -32,6 +36,36 @@ function playSound(buffer, loop) {
     windGainNode.gain.value = 0.5;
     console.log('note on');
     source.noteOn(0);                          // play the source now
+}
+
+function initThunderSound() {
+    thunderSource = context.createBufferSource();
+    thunderSource.buffer = thunderBuffer;
+    thunderSource.loop = false;
+    thunderGainNode = context.createGainNode();
+    thunderSource.connect(thunderGainNode);
+    thunderGainNode.connect(context.destination);
+    thunderGainNode.gain.value = 0.3;
+}
+
+function playThunderSound() {
+    initThunderSound();
+    thunderSource.noteOn(0);
+}
+
+function initGustSound() {
+    gustSource = context.createBufferSource();
+    gustSource.buffer = gustBuffer;
+    gustSource.loop = false;
+    gustGainNode = context.createGainNode();
+    gustSource.connect(gustGainNode);
+    gustGainNode.connect(context.destination);
+    gustGainNode.gain.value = 0.8;
+}
+
+function playGustSound() {
+    initGustSound();
+    gustSource.noteOn(0);
 }
 
 /*

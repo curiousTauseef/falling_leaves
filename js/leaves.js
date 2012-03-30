@@ -10,7 +10,8 @@
 var skeletonHistoryCount = 5;
 var skeletonVelocitySnapshotFrames = 20; // store skeleton points about every 1/3 second at 60 fps.
 var skeletonVelocityCheckFrames = 20;  // check skeleton point velocity about every 1/3 second at 60 fps.
-var slowGlobalDt = 0.00675;
+//var slowGlobalDt = 0.00675;
+var slowGlobalDt = 0.00375;
 var fastGlobalDt = 0.2;
 var leafMode = 'stick'; // 'bounce'
 var handsTogetherDistance = 0.3;
@@ -208,7 +209,7 @@ function toggleSound(e) {
 function getWindVelocity() {
     // XXX should really have a random base, which is this effected
     // temporarily by changes in hand (and/or body?) motion
-    // var slowGlobalDt = 0.00675;
+    // var slowGlobalDt = 0.00375;
     // var fastGlobalDt = 0.2;
     // 0.3 -> 0.00675
     // 1.0 -> .2
@@ -378,7 +379,7 @@ function releaseAllLeaves() {
  */
 function releaseSomeLeaves(jointName, throwDirectionVector, throwDirectionMagnitudeSquared) {
     var leaves;
-    playSound(gustBuffer, false);
+    playGustSound();
     if (jointName == 'RightHand') {
         leaves = rightBodyLeaves;
     } else if (jointName == 'LeftHand') {
@@ -572,7 +573,7 @@ function doHandsTogether() {
     // prevent double-clapping etc from re-triggering midcycle, otherwise we
     // might be left with a white background.
     if (flashCount == 0) {
-        playSound(thunderBuffer);
+        playThunderSound();
         releaseAllLeaves();
         flashCount = 16;
     }
@@ -644,6 +645,7 @@ function hitBodyTest(leaf) {
 /* For leaves that are stuck to the body, we need to compute their new position as the skeleton moves around.
  */
 function positionAttachedLeaves() {
+    /*
     var leaves;
     var count = 0;
     for (var x = 0; x < 3; x++) {
@@ -663,6 +665,7 @@ function positionAttachedLeaves() {
             leaf.geometry.position.z = skeletonPoint.position.z + leaf.deltaVector.z;
         }
     }
+    */
 }
 
 /* <><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -753,7 +756,7 @@ function loaded() {
                             }
                         }
                     }
-                    positionAttachedLeaves();
+                    // positionAttachedLeaves();
                     handsTogether();
                 });
         });
@@ -766,12 +769,12 @@ function loaded() {
 
     zig.addEventListener('userfound', function(user) {
             console.log('Found user. ID: ' + user.id);
-            moveSkeletonOnscreen();
+            // moveSkeletonOnscreen();
         });
     zig.addEventListener('userlost', function(user) {
             console.log('User lost: ' + user.id);
             releaseAllLeaves();
-            moveSkeletonOffscreen();
+            // moveSkeletonOffscreen();
         });
 
     initWindSound();
